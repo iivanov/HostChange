@@ -39,7 +39,9 @@ TabOfHosts::TabOfHosts(QTabWidget * tab, QString tab_name, QString file_name, QO
             pattern_text_edit->setPlainText(ReadFile.readAll());
             showPattern();
 
-            //TODO: распарсить шаблон
+            showPattern();
+            showPatternElements();
+            parsePattern();
 
         } else {
             is_pattern = is_pattern.append("\n");
@@ -59,25 +61,31 @@ TabOfHosts::TabOfHosts(QTabWidget * tab, QString tab_name, QString file_name, QO
 
 void TabOfHosts::initTab()
 {
+    pattern_parser = new PatternParser();
+
     currentTab = new QWidget(tab_widget);
 
     plain_text_edit = new QPlainTextEdit(currentTab);
     connect(plain_text_edit, SIGNAL (textChanged()), this, SLOT (changedHostTab()));
-    plain_text_edit->move(0, 20);
+    plain_text_edit->move(5, 40);
+    plain_text_edit->setFixedWidth(400);
+    plain_text_edit->setFixedHeight(300);
 
     pattern_text_edit = new QPlainTextEdit(currentTab);
-    connect(pattern_text_edit, SIGNAL (textChanged()), this, SLOT (changedHostTab()));
-    pattern_text_edit->move(320, 20);
+    connect(pattern_text_edit, SIGNAL (textChanged()), this, SLOT (patternChanged()));
+    pattern_text_edit->move(420, 40);
+    pattern_text_edit->setFixedWidth(400);
+    pattern_text_edit->setFixedHeight(300);
     pattern_text_edit->hide();
 
     is_pattern_checkbox = new QCheckBox(currentTab);
     is_pattern_checkbox->setText("Use pattern");
     connect(is_pattern_checkbox, SIGNAL (stateChanged(int)), this, SLOT (patternCheckboxChanged(int)));
-    is_pattern_checkbox->move(0, 0);
+    is_pattern_checkbox->move(5, 10);
 
     apply_button = new QPushButton(currentTab);
     apply_button->setText("Set this hosts");
-    apply_button->move(0, 230);
+    apply_button->move(5, 360);
     connect(apply_button, SIGNAL (pressed()), this, SLOT (setCurrentHosts()));
 
     tab_widget->addTab(currentTab, name);
@@ -88,13 +96,16 @@ void TabOfHosts::setCurrentHosts()
 {
 
     QFile file(hosts_file_path);
+    file.open(QIODevice::QIODevice::WriteOnly | QIODevice::Truncate);
+    file.close();
+    if (file.open(QIODevice::QIODevice::ReadWrite)) {
 
-    if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
         QString hosts_text;
 
         if (is_pattern_checkbox->isChecked()) {
-            //TODO:!!!!!!!
+            parsePattern();
+            hosts_text = plain_text_edit->toPlainText();
         } else {
             hosts_text = plain_text_edit->toPlainText();
         }
@@ -175,7 +186,7 @@ void TabOfHosts::showPattern()
     is_pattern_checkbox->setChecked(true);
 }
 
-void TabOfHosts::hidePatter()
+void TabOfHosts::hidePattern()
 {
     pattern_text_edit->hide();
     plain_text_edit->setReadOnly(false);
@@ -187,7 +198,72 @@ void TabOfHosts::patternCheckboxChanged(int i)
 {
     if (is_pattern_checkbox->isChecked()) {
         showPattern();
+        parsePattern();
     } else {
-        hidePatter();
+        hidePattern();
     }
+}
+
+void TabOfHosts::patternChanged()
+{
+    pattern_parser->setText(pattern_text_edit->toPlainText());
+    pattern_variables = pattern_parser->getVariables();
+    changedHostTab();
+    showPatternElements();
+    parsePattern();
+}
+
+void TabOfHosts::showPatternElements()
+{
+    for (int i = 0; i < pattern_variables_edit.size(); ++i) {
+           QLineEdit* var = pattern_variables_edit.at(i);
+           pattern_variables_edit.removeAt(i);
+           delete var;
+           QLabel* label = pattern_labels.at(i);
+           pattern_labels.removeAt(i);
+           delete label;
+    }
+
+    int position = 0;
+    QListIterator<QString> iterator(pattern_variables);
+    while (iterator.hasNext()) {
+        QString variable_name = iterator.next();
+        pattern_labels.append(new QLabel(currentTab));
+        QLabel* add_label = pattern_labels.last();
+        add_label->setText(variable_name);
+
+
+        pattern_variables_edit.append(new QLineEdit(currentTab));
+        QLineEdit* variable_text_edit = pattern_variables_edit.last();
+        variable_text_edit->setObjectName(variable_name);
+        variable_text_edit->setAccessibleName(variable_name);
+        variable_text_edit->setFixedWidth(100);
+        if (variables_map.contains(variable_name)) {
+            variable_text_edit->setText(variables_map[variable_name]);
+        }
+
+        connect(variable_text_edit, SIGNAL (editingFinished()), this, SLOT (variableDataChanged()));
+        //TODO: fix size
+        variable_text_edit->move(170 + position * (5 + 150), 10);
+        variable_text_edit->show();
+        add_label->move(120 + position *  (5 + 150), 12);
+        add_label->show();
+
+        position++;
+    }
+}
+
+
+void TabOfHosts::variableDataChanged()
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(sender());
+    variables_map[edit->accessibleName()] = edit->text();
+    parsePattern();
+}
+
+
+void TabOfHosts::parsePattern()
+{
+    pattern_parser -> setText(pattern_text_edit->toPlainText());
+    plain_text_edit->setPlainText(pattern_parser->parseTemplate(variables_map));
 }

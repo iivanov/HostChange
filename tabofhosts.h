@@ -8,6 +8,9 @@
 #include <QPushButton>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QLineEdit>
+#include <patternparser.h>
+#include <QLabel>
 
 
 class TabOfHosts : public QObject
@@ -26,7 +29,9 @@ signals:
 public slots:
     void setCurrentHosts();
     void changedHostTab();
+    void patternChanged();
     void patternCheckboxChanged(int i);
+    void variableDataChanged();
 private:
     QTabWidget* tab_widget;
     QString name;
@@ -35,10 +40,17 @@ private:
     QCheckBox* is_pattern_checkbox;
     QPushButton* apply_button;
     QWidget *currentTab;
+    PatternParser *pattern_parser;
     const QString hosts_file_path = "/var/www/testhost";
     QString getFilePath();
     void showPattern();
-    void hidePatter();
+    void hidePattern();
+    QList<QString> pattern_variables;
+    QList<QLineEdit *> pattern_variables_edit;
+    QList<QLabel *> pattern_labels;
+    QMap<QString,QString> variables_map;
+    void showPatternElements();
+    void parsePattern();
 };
 
 #endif // TABOFHOSTS_H

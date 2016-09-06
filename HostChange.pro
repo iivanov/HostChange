@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     asktabname.cpp \
-    tabofhosts.cpp
+    tabofhosts.cpp \
+    patternparser.cpp
 
 HEADERS  += mainwindow.h \
     asktabname.h \
-    tabofhosts.h
+    tabofhosts.h \
+    patternparser.h
 
 FORMS    += mainwindow.ui \
     asktabname.ui
