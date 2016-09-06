@@ -25,3 +25,6 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     asktabname.ui
+
+DISTFILES += \
+    README.md

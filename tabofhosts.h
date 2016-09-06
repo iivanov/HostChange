@@ -41,7 +41,7 @@ private:
     QPushButton* apply_button;
     QWidget *currentTab;
     PatternParser *pattern_parser;
-    const QString hosts_file_path = "/var/www/testhost";
+    const QString hosts_file_path = "/etc/hosts";
     QString getFilePath();
     void showPattern();
     void hidePattern();

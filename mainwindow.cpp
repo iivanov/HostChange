@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    tab_list.append(new TabOfHosts(ui->tabWidget, "/etc/hosts", "/var/www/testhost"));
+    tab_list.append(new TabOfHosts(ui->tabWidget, "/etc/hosts", "/etc/hosts"));
     loadTabs();
 }
 
