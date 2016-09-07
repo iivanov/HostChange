@@ -24,12 +24,15 @@ QList<QString> PatternParser::getVariables()
             break;
             //throw("Wrong pattern");
         }
-        result.append(
-           text.mid(
-              pattern_begin + left_delimeter.length(),
-              pattern_end - pattern_begin - left_delimeter.length()
-            )
-        );
+        QString variable = text.mid(
+            pattern_begin + left_delimeter.length(),
+            pattern_end - pattern_begin - left_delimeter.length()
+          );
+        if (!result.contains(variable)) {
+            result.append(
+               variable
+            );
+        }
         //TODO: лучше бы end но пока убрал исключение
         start_position = pattern_end;
         pattern_begin = text.indexOf(left_delimeter, start_position);
