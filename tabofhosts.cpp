@@ -28,6 +28,13 @@ TabOfHosts::TabOfHosts(QTabWidget * tab, QString tab_name, QString file_name, QO
 
     initTab();
 
+    loadFromFile(file_name);
+
+}
+
+
+void TabOfHosts::loadFromFile(QString file_name)
+{
     QFile file(file_name);
 
     if (file.open(QFile::ReadOnly | QFile::Text)) {
@@ -54,7 +61,6 @@ TabOfHosts::TabOfHosts(QTabWidget * tab, QString tab_name, QString file_name, QO
         //TODO: нормально описать причину ошибки
         QMessageBox::critical(currentTab, tr("Errore"), tr("Can not get hosts file"));
     }
-
 
 }
 
@@ -114,11 +120,13 @@ void TabOfHosts::setCurrentHosts()
 
         file.flush();
         file.close();
+
     } else {
         //TODO: нормально описать причину ошибки
         QMessageBox::critical(currentTab, tr("Errore"), tr("Can not save file"));
     }
     apply_button->setEnabled(false);
+    emit setActiveHostTab();
 }
 
 void TabOfHosts::changedHostTab()
@@ -253,6 +261,10 @@ void TabOfHosts::showPatternElements()
     }
 }
 
+QString TabOfHosts::getName()
+{
+    return name;
+}
 
 void TabOfHosts::variableDataChanged()
 {
@@ -266,4 +278,12 @@ void TabOfHosts::parsePattern()
 {
     pattern_parser -> setText(pattern_text_edit->toPlainText());
     plain_text_edit->setPlainText(pattern_parser->parseTemplate(variables_map));
+}
+
+void TabOfHosts::onChangeActiveTab()
+{
+    apply_button->setEnabled(true);
+    if (name.compare("/etc/hosts") == 0) {
+        loadFromFile(getFilePath());
+    }
 }

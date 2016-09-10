@@ -28,3 +28,29 @@ FORMS    += mainwindow.ui \
 
 DISTFILES += \
     README.md
+
+ject.pro
+
+unix:!mac {
+ LIBS += -Wl,-rpath=\\\$$ORIGIN/../lib
+}
+
+target.path = /usr/share/project/bin
+target.files = app_name qt.conf
+INSTALLS += target 
+data.path = /usr/share/project/lib
+data.files = lib/*
+INSTALLS += data
+
+
+
+unix:!mac {
+ LIBS += -Wl,-rpath=\\\$$ORIGIN/../lib
+}
+ 
+target.path = /usr/share/project/bin
+target.files = app_name qt.conf
+INSTALLS += target 
+data.path = /usr/share/project/lib
+data.files = lib/*
+INSTALLS += data

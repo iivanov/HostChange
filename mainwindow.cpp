@@ -3,6 +3,7 @@
 #include "asktabname.h"
 #include <QMessageBox>
 #include <QDir>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -10,7 +11,31 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     tab_list.append(new TabOfHosts(ui->tabWidget, "/etc/hosts", "/etc/hosts"));
+    connectEvent(tab_list.last());
     loadTabs();
+}
+
+void MainWindow::connectEvent(TabOfHosts* tab)
+{
+    connect(tab, SIGNAL (setActiveHostTab()), this, SLOT (onSetActiveHostTab()));
+
+    QListIterator<TabOfHosts*> iterator(tab_list);
+    while (iterator.hasNext()) {
+        TabOfHosts* other_tab = iterator.next();
+        if (other_tab != tab) {
+            connect(tab, SIGNAL (setActiveHostTab()), other_tab, SLOT (onChangeActiveTab()));
+            connect(other_tab, SIGNAL (setActiveHostTab()), tab, SLOT (onChangeActiveTab()));
+        }
+    }
+}
+
+void MainWindow::onSetActiveHostTab()
+{
+    TabOfHosts* tab = qobject_cast<TabOfHosts*>(sender());
+    emit changedActiveTab(tab);
+    //TODO: set current t
+    ui->activeTabLabel->setText(tab->getName());
+    qDebug() << "test";
 }
 
 void MainWindow::loadTabs()
@@ -26,6 +51,7 @@ void MainWindow::loadTabs()
            QString file_name = fileInfo.fileName();
            file_name = file_name.mid(0, file_name.length() - 6);//5 = len of ".hosts"
            tab_list.append(new TabOfHosts(ui->tabWidget, file_name, fileInfo.filePath()));
+           connectEvent(tab_list.last());
 
     }
 
@@ -46,6 +72,7 @@ void MainWindow::on_addButton_pressed()
 
     if (!tab_name.isEmpty()) {
         tab_list.append(new TabOfHosts(ui->tabWidget, tab_name));
+        connectEvent(tab_list.last());
     }
 
     delete(dialog);
@@ -93,6 +120,7 @@ void MainWindow::on_copyButton_clicked()
     if (!tab_name.isEmpty()) {
         TabOfHosts* current_tab = tab_list.at(ui->tabWidget->currentIndex());
         tab_list.append(new TabOfHosts(current_tab, tab_name));
+        connectEvent(tab_list.last());
     }
 
     delete(dialog);

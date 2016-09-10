@@ -11,6 +11,8 @@
 #include <QLineEdit>
 #include <patternparser.h>
 #include <QLabel>
+#include <QCoreApplication>
+#include <QEvent>
 
 
 class TabOfHosts : public QObject
@@ -23,15 +25,17 @@ public:
     void initTab();
     void save();
     bool remove();
+    QString getName();
 
 signals:
-
+    void setActiveHostTab();
 public slots:
     void setCurrentHosts();
     void changedHostTab();
     void patternChanged();
     void patternCheckboxChanged(int i);
     void variableDataChanged();
+    void onChangeActiveTab();
 private:
     QTabWidget* tab_widget;
     QString name;
@@ -51,6 +55,7 @@ private:
     QMap<QString,QString> variables_map;
     void showPatternElements();
     void parsePattern();
+    void loadFromFile(QString file_name);
 };
 
 #endif // TABOFHOSTS_H
