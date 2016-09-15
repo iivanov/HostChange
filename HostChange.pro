@@ -35,22 +35,9 @@ unix:!mac {
  LIBS += -Wl,-rpath=\\\$$ORIGIN/../lib
 }
 
-target.path = /usr/share/project/bin
-target.files = app_name qt.conf
-INSTALLS += target 
-data.path = /usr/share/project/lib
-data.files = lib/*
-INSTALLS += data
-
-
-
-unix:!mac {
- LIBS += -Wl,-rpath=\\\$$ORIGIN/../lib
-}
- 
-target.path = /usr/share/project/bin
-target.files = app_name qt.conf
-INSTALLS += target 
-data.path = /usr/share/project/lib
+target.path = /usr/share/host_change/bin
+target.files = HostChange qt.conf
+INSTALLS += target
+data.path = /usr/share/host_change/lib
 data.files = lib/*
 INSTALLS += data
